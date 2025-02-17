@@ -2,11 +2,19 @@ import { PriorityQueue } from './structures/PriorityQueue.js';
 import { GraphManager } from './structures/GraphManager.js';
 import { UI } from './UI.js';
 
+/**
+ * Classe que implementa o algoritmo de Dijkstra para encontrar caminhos mínimos em grafos
+ * @class
+ */
 export class DijkstraAlgorithm {
     /**
-     * Executes Dijkstra's algorithm based on UI inputs
+     * Executa o algoritmo de Dijkstra com base nos dados da interface
      * @static
      * @returns {void}
+     * @throws {Error} Se elementos do formulário não forem encontrados
+     * @throws {Error} Se o ID do grafo for inválido
+     * @throws {Error} Se o grafo não for encontrado
+     * @throws {Error} Se o nó inicial não existir no grafo
      */
     static runTest() {
         try {
@@ -56,11 +64,14 @@ export class DijkstraAlgorithm {
     }
 
     /**
-     * Core Dijkstra's algorithm implementation
+     * Implementação principal do algoritmo de Dijkstra
      * @static
-     * @param {Object} adjacencyList - Graph nodes and connections
-     * @param {string} startNode - Starting node ID
-     * @returns {Object} Execution results {distances, predecessors, iterations}
+     * @param {Object} adjacencyList - Lista de adjacência representando o grafo
+     * @param {string} startNode - Identificador do nó inicial
+     * @returns {Object} Resultados da execução contendo:
+     *  - distances: Distâncias mínimas calculadas
+     *  - predecessors: Predecessores no caminho mínimo
+     *  - iterations: Lista de estados do algoritmo por iteração
      */
     static runDijkstra(adjacencyList, startNode) {
         const distances = {};
@@ -81,6 +92,7 @@ export class DijkstraAlgorithm {
         queue.enqueue(startNode, 0);
 
         let step = 1;
+
         while (!queue.isEmpty()) {
             const { element: current, priority: currentDist } = queue.dequeue();
 
@@ -110,13 +122,13 @@ export class DijkstraAlgorithm {
     }
 
     /**
-     * Creates a snapshot of algorithm state
+     * Cria um snapshot do estado atual do algoritmo
      * @static
-     * @param {number} step - Iteration number
-     * @param {string} current - Current node being processed
-     * @param {Object} distances - Current distance values
-     * @param {Object} predecessors - Current predecessor map
-     * @returns {Object} Iteration snapshot
+     * @param {number} step - Número da iteração
+     * @param {string} current - Nó atual sendo processado
+     * @param {Object} distances - Distâncias atuais calculadas
+     * @param {Object} predecessors - Mapa atual de predecessores
+     * @returns {Object} Snapshot da iteração
      */
     static createIterationSnapshot(step, current, distances, predecessors) {
         return {
@@ -128,31 +140,59 @@ export class DijkstraAlgorithm {
     }
 
     /**
-     * Generates DOT representation of algorithm results
+     * Gera a representação DOT do grafo após execução do algoritmo
      * @static
-     * @param {Array} edges - Original graph edges
-     * @param {Object} distances - Final distance values
-     * @param {Object} predecessors - Final predecessor map
-     * @returns {string} DOT string for visualization
+     * @param {Array} edges - Arestas do grafo original
+     * @param {Object} distances - Distâncias finais calculadas
+     * @param {Object} predecessors - Mapa final de predecessores
+     * @returns {string} String DOT para visualização
      */
     static generateDoneDot(edges, distances, predecessors) {
+        // Determine graph type based on edge types - if any edge is directed or bidirectional, use digraph
+        const edgeTypes = new Set(edges.filter(e => !e.isReverse).map(e => e.type));
+        const isDirected = edgeTypes.has('directed') || edgeTypes.has('bidirectional');
+        const graphType = isDirected ? 'digraph' : 'graph';
+        
         const nodeDefinitions = Object.keys(distances).map(node =>
             `  ${node} [xlabel="Dist: ${distances[node] === Infinity ? '∞' : distances[node]}"];`
         );
 
-        const edgeDefinitions = edges.map(edge => {
-            const isOptimal = predecessors[edge.target] === edge.source &&
-                distances[edge.target] === distances[edge.source] + edge.weight;
+        const processedEdges = new Set();
+        const edgeDefinitions = edges
+            .filter(edge => {
+                const edgeKey = `${edge.source}-${edge.target}`;
+                const reverseKey = `${edge.target}-${edge.source}`;
+                if (processedEdges.has(edgeKey) || processedEdges.has(reverseKey)) {
+                    return false;
+                }
+                processedEdges.add(edgeKey);
+                return true;
+            })
+            .map(edge => {
+                // Check both directions for optimal path
+                const isForwardOptimal = predecessors[edge.target] === edge.source &&
+                    distances[edge.target] === distances[edge.source] + edge.weight;
+                const isReverseOptimal = (edge.type === 'undirected' || edge.type === 'bidirectional') &&
+                    predecessors[edge.source] === edge.target &&
+                    distances[edge.source] === distances[edge.target] + edge.weight;
 
-            return `  ${edge.source} -> ${edge.target} [
-                label="${edge.weight}"
-                ${isOptimal ? 'color="red" penwidth=2' : 'color="gray70"'}
-            ];`;
-        });
+                const isOptimal = isForwardOptimal || isReverseOptimal;
+                const edgeOp = isDirected ? '->' : '--';
+                let attrs = [
+                    `label="${edge.weight}"`,
+                    isOptimal ? 'color="red" penwidth=2' : 'color="gray70"'
+                ];
 
-        return `digraph G {
+                if (edge.type === 'bidirectional' && isDirected) {
+                    attrs.push('dir=both');
+                }
+
+                return `  ${edge.source} ${edgeOp} ${edge.target} [${attrs.join(', ')}];`;
+            });
+
+        return `${graphType} G {
             node [style=filled, fillcolor=white, fontname="Helvetica"]
-            edge [fontsize=8]
+            edge [fontsize=12]
             ${nodeDefinitions.join('\n')}
             ${edgeDefinitions.join('\n')}
         }`;

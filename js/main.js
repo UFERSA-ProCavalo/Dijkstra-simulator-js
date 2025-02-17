@@ -16,36 +16,54 @@ document.getElementById('importFile').addEventListener('change', function(e) {
     reader.onload = function(e) {
         try {
             const content = e.target.result;
-            const graphs = content.split('\n\n').filter(g => g.trim());
+            let importedCount = 0;
             
-            graphs.forEach(graphText => {
-                const lines = graphText.split('\n');
-                let name = 'Imported Graph';
-                let edges = [];
-                let currentSection = null;
-
+            // Split content by empty lines and process each section
+            const sections = content.split(/\n\s*\n/);
+            let currentGraph = { name: '', edges: [] };
+            
+            sections.forEach(section => {
+                const lines = section.trim().split('\n');
+                
+                // Process each section independently
+                let currentName = '';
+                let currentEdges = [];
+                
                 lines.forEach(line => {
                     line = line.trim();
                     if (line.startsWith('Name:')) {
-                        name = line.replace('Name:', '').trim();
+                        currentName = line.replace('Name:', '').trim();
                     } else if (line === 'Original:') {
-                        currentSection = 'original';
-                    } else if (line === 'Done:') {
-                        currentSection = 'done';
-                    } else if (currentSection === 'original' && line) {
-                        edges.push(line);
+                        // Reset edges when new section starts
+                        currentEdges = [];
+                    } else if (line && !line.startsWith('Done:')) {
+                        currentEdges.push(line);
                     }
                 });
 
-                // Add graph using the original edge format
-                GraphManager.addGraph(name, edges.join('\n'));
+                // Only process if we have both name and edges
+                if (currentName && currentEdges.length > 0) {
+                    try {
+                        const edgesText = currentEdges.join('\n');
+                        const { edges, nodes } = GraphManager.parseEdges(edgesText);
+                        
+                        if (GraphManager.validateGraph(edges, nodes)) {
+                            GraphManager.addGraph(currentName, edgesText);
+                            importedCount++;
+                        }
+                    } catch (graphError) {
+                        UI.showToast(`Erro no grafo "${currentName}": ${graphError.message}`, 'error');
+                    }
+                }
             });
 
-            UI.showToast('Import successful!', 'success');
-            UI.showAllGraphs();
+            if (importedCount > 0) {
+                UI.showToast(`Importação concluída: ${importedCount} grafo(s) importado(s)`, 'success');
+                UI.showAllGraphs();
+            }
 
         } catch (error) {
-            UI.showToast('Import failed: ' + error.message, 'error');
+            UI.showToast('Falha na importação: ' + error.message, 'error');
         }
     };
     reader.readAsText(file);
@@ -108,12 +126,15 @@ window.exportData = () => {
     UI.showToast('Exportação realizada com sucesso!', 'success');
 };
 
+window.handleDeleteGraph = () => {
+    const id = parseInt(document.getElementById('graphId').value);
+    GraphManager.deleteGraph(id);
+    UI.showAllGraphs();
+}
+
 window.handleAddGraph = () => {
     const name = document.getElementById('graphName').value;
     const edgesText = document.getElementById('graphEdges').value;
 
     GraphManager.addGraph(name, edgesText);
-    UI.showToast('Graph adicionado com sucesso!', 'success');
-    UI.showAllGraphs();
-    console.log(GraphManager.graphs);
 };
