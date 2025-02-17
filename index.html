@@ -37,7 +37,7 @@
     C [xlabel="Dist: 2"] 
     D [xlabel="Dist: 5"]
     
-    A -> B [label="4", color="gray70"];
+    A -> B [label="4", color="red", penwidth=2];
     A -> C [label="2", color="red", penwidth=2];
     B -> C [label="5", color="gray70"];
     B -> D [label="10", color="gray70"];
@@ -46,7 +46,7 @@
     </script>
 </head>
 
-<body class="p-8 bg-base-200">
+<body class="p-8 bg-base" style="display: none;" onload="document.body.style.display = 'block'">
 
     <!-- Help Modal -->
     <dialog id="helpModal" class="modal">
@@ -55,10 +55,10 @@
 
             <!-- Step Indicators -->
             <div class="steps mb-6">
-                <div class="step step-primary">1</div>
-                <div class="step">2</div>
-                <div class="step">3</div>
-                <div class="step">4</div>
+                <div class="step step-primary"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+                <div class="step"></div>
             </div>
 
             <!-- Step 1: Welcome Message -->
@@ -109,6 +109,7 @@
                                 <li>Pesos das arestas devem ser números positivos</li>
                                 <li>Grafos devem ser conectados</li>
                                 <li>Arestas duplicadas não são permitidas</li>
+                                <li>O número de iterações é o mesmo número de vértices</li>
                             </ul>
                         </div>
                     </div>
@@ -120,21 +121,14 @@
                 <div class="space-y-6">
                     <!-- Import Example -->
                     <div>
-                        <h4 class="font-bold mb-2">📥 Formato de Importação (JSON):</h4>
+                        <h4 class="font-bold mb-2">📥 Formato de Importação:</h4>
                         <pre class="bg-base-300 p-4 rounded-lg text-sm">
-<code>[
-    {
-        "id": 1,
-        "name": "Exemplo",
-        "original": {
-        "nodes": { "A": [{ "target": "B", "weight": 5 }] },
-        "edges": [{ "source": "A", "target": "B", "weight": 5 }],
-        "dot": "digraph G {\n  A -> B [label=\"5\"];\n}"
-        },
-        "done": null
-    }
-]</code>
-                        </pre>
+<code>Name: Nome do Grafo
+Original:
+A B 5
+B C 3
+C A 2</code>
+</pre>
                     </div>
 
                     <!-- Edge Format -->
@@ -162,7 +156,7 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="badge badge-primary">2</div>
-                                        Digite o nome: "Mapa da Cidade"
+                                        Digite o nome: Grafo de exemplo
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="badge badge-primary">3</div>
@@ -255,6 +249,7 @@
                 </div>
                 <div class="flex-none gap-4 mr-4">
                     <input type="file" id="importFile" class="file-input file-input-bordered" accept=".txt">
+                    <button onclick="exportData()" class="btn btn-outline">Export Data</button>
                 </div>
             </div>
         </header>
@@ -263,7 +258,7 @@
         <div class="grid grid-cols-4 gap-8">
             <!-- Sidebar Menu -->
             <aside class="col-span-1">
-                <div class="menu bg-base-100 p-4 rounded-box shadow-lg">
+                <div class="menu bg-base-100 p-4 rounded-box shadow-lg gap-y-1">
                     <li><button class="btn btn-ghost inline-block align-middle" onclick="UI.showAllGraphs()">📊 Mostrar
                             Todos os
                             Grafos</button></li>
@@ -326,8 +321,13 @@
             </div>
             <div class="form-control mt-4">
                 <label class="label">
-                    <span class="label-text">Arestas (formato: "origem destino peso")</span>
+                    <span class="label-text">Arestas (formatos aceitos):</span>
                 </label>
+                <div class="text-sm text-gray-600 mb-2">
+                    <div>• A -> B 5 (direcionado)</div>
+                    <div>• A -- B 5 (não direcionado)</div>
+                    <div>• A <-> B 5 (bidirecional)</div>
+                </div>
                 <textarea id="graphEdges" class="textarea textarea-bordered h-32"></textarea>
             </div>
             <button onclick="handleAddGraph()" class="btn btn-primary mt-4">Adicionar Grafo</button>
@@ -345,7 +345,7 @@
                     ${UI.generateIdOptions()}
                 </select>
             </div>
-            <button onclick="GraphManager.deleteGraphHandler()" class="btn btn-error mt-4">Excluir Grafo</button>
+            <button onclick="handleDeleteGraph()" class="btn btn-error mt-4">Excluir Grafo</button>
         </div>
     </template>
 
@@ -359,8 +359,7 @@
                         ${UI.generateIdOptions()}
                     </select>
                     <button onclick="GraphManager.visualizeGraph('original')" class="btn btn-primary">Original</button>
-                    <button onclick="GraphManager.visualizeGraph('done')" class="btn btn-secondary">Algorithm
-                        Result</button>
+                    <button onclick="GraphManager.visualizeGraph('done')" class="btn btn-secondary">Sub-grafo Resultante</button>
                 </div>
 
                 <!-- Iteration table container -->

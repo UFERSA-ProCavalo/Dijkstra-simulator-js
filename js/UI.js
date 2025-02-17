@@ -100,7 +100,7 @@ export class UI {
 
     static refreshSelects() {
         const options = GraphManager.getGraphOptions();
-        document.querySelectorAll('.graph-select').forEach(select => {
+        document.querySelectorAll('.graphId').forEach(select => {
             select.innerHTML = options.map(opt =>
                 `<option value="${opt.value}">${opt.text}</option>`
             ).join('');
