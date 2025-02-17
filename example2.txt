@@ -1,0 +1,40 @@
+# Grafo Pequeno (3 nós)
+Name: Rede Social Básica
+Original:
+Alice -> Bob 2
+Bob <-> Carol 3
+Carol <-> Alice 1
+
+# Grafo Médio (5 nós)
+Name: Sistema de Transporte
+Original:
+Terminal -> Centro 4
+Centro <-> Parque 2
+Parque <-> Shopping 5
+Shopping -> Aeroporto 3
+Aeroporto <-> Terminal 1
+
+# Grafo Grande 1 (6 nós)
+Name: Infraestrutura de Rede
+Original:
+Servidor -> Roteador 10
+Roteador <-> Switch 8
+Switch <-> Firewall 12
+Firewall -> Cloud 15
+Cloud <-> Servidor 5
+Roteador -> IoT_Device 7
+IoT_Device <-> Smartphone 3
+Smartphone <-> Cloud 9
+
+# Grafo Grande 2 (7 nós)
+Name: Ecossistema Biologico
+Original:
+Planta -> Herbívoro 6
+Herbívoro <-> Carnívoro 4
+Carnívoro <-> Decompositor 2
+Decompositor -> Solo 8
+Solo <-> Planta 3
+Herbívoro -> Parasita 1
+Parasita <-> Carnívoro 5
+Solo <-> Água 7
+Água -> Planta 9
