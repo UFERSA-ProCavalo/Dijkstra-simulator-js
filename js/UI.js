@@ -1,5 +1,4 @@
 import { GraphManager } from './structures/GraphManager.js';
-import { HelpModal } from './helper.js';
 /**
  * Classe para gerenciamento da interface do usuário
  * @class
