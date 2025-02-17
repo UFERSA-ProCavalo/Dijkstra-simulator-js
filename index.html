@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html data-theme="light">
+
+<head>
+    <title>Ferramenta do Algoritmo de Dijkstra</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.2/dist/full.css" rel="stylesheet">
+    <!-- Viz.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/viz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/full.render.js"></script>
+    <script>
+        const helpOriginalDot = `digraph G {
+    node [style=filled, fillcolor=white]
+    edge [fontsize=10]
+
+    A [xlabel="Dist: 0"]
+    B [xlabel="Dist: 4"]
+    C [xlabel="Dist: 2"] 
+    D [xlabel="Dist: ∞"]
+    
+    A -> B [label="4"];
+    A -> C [label="2"];
+    B -> C [label="5"];
+    B -> D [label="10"];
+    C -> D [label="3"];
+}`;
+
+        const helpDoneDot = `digraph G {
+    node [style=filled, fillcolor=white]
+    edge [fontsize=10]
+    
+    A [xlabel="Dist: 0"]
+    B [xlabel="Dist: 4"]
+    C [xlabel="Dist: 2"] 
+    D [xlabel="Dist: 5"]
+    
+    A -> B [label="4", color="gray70"];
+    A -> C [label="2", color="red", penwidth=2];
+    B -> C [label="5", color="gray70"];
+    B -> D [label="10", color="gray70"];
+    C -> D [label="3", color="red", penwidth=2];
+}`;
+    </script>
+</head>
+
+<body class="p-8 bg-base-200">
+
+    <!-- Help Modal -->
+    <dialog id="helpModal" class="modal">
+        <div class="modal-box w-11/12 max-w-5xl">
+            <h3 class="font-bold text-2xl mb-4">Guia da Ferramenta Dijkstra</h3>
+
+            <!-- Step Indicators -->
+            <div class="steps mb-6">
+                <div class="step step-primary">1</div>
+                <div class="step">2</div>
+                <div class="step">3</div>
+                <div class="step">4</div>
+            </div>
+
+            <!-- Step 1: Welcome Message -->
+            <div class="help-step active" data-step="1">
+                <div class="text-center space-y-4">
+                    <h2 class="text-3xl font-bold text-primary">Bem-vindo! 👋</h2>
+                    <p class="text-lg">
+                        Esta ferramenta ajuda você a trabalhar com o algoritmo de Dijkstra através de visualizações
+                        interativas.
+                    </p>
+                    <div class="alert alert-success">
+                        <div>
+                            <h3 class="font-bold">Funcionalidades Principais:</h3>
+                            <ul class="list-disc pl-6 mt-2">
+                                <li>Criação e gerenciamento de grafos</li>
+                                <li>Visualização passo a passo do algoritmo</li>
+                                <li>Capacidade de importação</li>
+                                <li>Exploração interativa de nós</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Instructions -->
+            <div class="help-step active" data-step="2">
+                <div class="space-y-4">
+                    <div class="alert alert-info">
+                        <div>
+                            <h4 class="font-bold text-lg mb-2">📚 Uso Básico</h4>
+                            <ul class="list-disc pl-6 space-y-2">
+                                <li>Crie novos grafos usando o formulário Adicionar Grafo</li>
+                                <li>Visualize resultados com o visualizador interativo</li>
+                                <li>Compare grafos originais e modificados pelo algoritmo</li>
+                                <li>Importe seu trabalho usando o botão no cabeçalho</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="collapse collapse-arrow border border-base-300">
+                        <input type="checkbox" />
+                        <div class="collapse-title font-medium">
+                            🧩 Regras da Estrutura do Grafo
+                        </div>
+                        <div class="collapse-content">
+                            <ul class="list-disc pl-6 space-y-2">
+                                <li>Nós são criados automaticamente a partir das arestas</li>
+                                <li>Pesos das arestas devem ser números positivos</li>
+                                <li>Grafos devem ser conectados</li>
+                                <li>Arestas duplicadas não são permitidas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Examples -->
+            <div class="help-step hidden" data-step="3">
+                <div class="space-y-6">
+                    <!-- Import Example -->
+                    <div>
+                        <h4 class="font-bold mb-2">📥 Formato de Importação (JSON):</h4>
+                        <pre class="bg-base-300 p-4 rounded-lg text-sm">
+<code>[
+    {
+        "id": 1,
+        "name": "Exemplo",
+        "original": {
+        "nodes": { "A": [{ "target": "B", "weight": 5 }] },
+        "edges": [{ "source": "A", "target": "B", "weight": 5 }],
+        "dot": "digraph G {\n  A -> B [label=\"5\"];\n}"
+        },
+        "done": null
+    }
+]</code>
+                        </pre>
+                    </div>
+
+                    <!-- Edge Format -->
+                    <div>
+                        <h4 class="font-bold mb-2">📝 Formato de Entrada de Arestas:</h4>
+                        <div class="bg-base-300 p-4 rounded-lg">
+                            <p class="text-sm opacity-75 mb-2">Uma aresta por linha (origem destino peso):</p>
+                            <code class="block font-mono text-sm">
+                            A B 5<br>
+                            B C 3<br>
+                            C A 2
+                        </code>
+                        </div>
+                    </div>
+
+                    <!-- Visual Guide -->
+                    <div>
+                        <h4 class="font-bold mb-2">🎨 Adicionando um Grafo:</h4>
+                        <div class="mockup-window bg-base-300">
+                            <div class="p-4 bg-base-200">
+                                <div class="flex flex-col gap-2 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <div class="badge badge-primary">1</div>
+                                        Clique <kbd>+ Adicionar Grafo</kbd>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="badge badge-primary">2</div>
+                                        Digite o nome: "Mapa da Cidade"
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="badge badge-primary">3</div>
+                                        Digite as arestas:<br>
+                                        <code class="ml-4">A B 5<br>B C 3</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Visualization Comparison -->
+            <div class="help-step hidden" data-step="4">
+                <div class="space-y-4">
+                    <h2 class="text-xl font-bold">Visualização do Algoritmo</h2>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Original State -->
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-bold mb-2">Grafo Original</h3>
+                            <pre class="bg-base-300 p-2 rounded text-sm"><code>digraph G {
+    A -> B [label="4"];
+    A -> C [label="2"];
+    B -> C [label="5"];
+    B -> D [label="10"];
+    C -> D [label="3"];
+}</code></pre>
+                            <div id="helpOriginalGraph" class="h-64"></div>
+                        </div>
+
+                        <!-- Done State -->
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-bold mb-2">Após o Algoritmo</h3>
+                            <pre class="bg-base-300 p-2 rounded text-sm"><code>digraph G {
+    A -> B [label="4", color="gray70"];
+    A -> C [label="2", color="red", penwidth=2];
+    B -> C [label="5", color="gray70"];
+    B -> D [label="10", color="gray70"];
+    C -> D [label="3", color="red", penwidth=2];
+}</code></pre>
+                            <div id="helpDoneGraph" class="h-64"></div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <div>
+                            <p>Diferenças Principais:</p>
+                            <ul class="list-disc pl-6 mt-2">
+                                <li>Arestas vermelhas mostram o caminho mais curto</li>
+                                <li>Distâncias dos nós exibidas na cor padrão</li>
+                                <li>Arestas mais grossas para caminhos ótimos</li>
+                                <li>Caminhos não ótimos esmaecidos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="modal-action justify-between">
+                <div class="flex gap-2">
+                    <button id="prevBtn" class="btn" onclick="handleHelpNavigation(-1)" disabled>
+                        ← Anterior
+                    </button>
+                    <button id="nextBtn" class="btn btn-primary" onclick="handleHelpNavigation(1)">
+                        Próximo →
+                    </button>
+                </div>
+                <button class="btn btn-success hidden" id="understandBtn" onclick="helpModal.close()">
+                    👍 Entendi
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Main Layout -->
+    <div class="container mx-auto">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="navbar bg-base-100 shadow-lg rounded-box">
+                <div class="flex-1">
+                    <h1 class="text-xl font-bold ml-4">Teoria de Grafos - Algoritmo de Dijkstra</h1>
+                </div>
+                <div class="flex-none gap-4 mr-4">
+                    <button onclick="helpModal.showModal()" id="helpButton" class="btn btn-circle btn-sm">
+                        ?
+                    </button>
+                </div>
+                <div class="flex-none gap-4 mr-4">
+                    <input type="file" id="importFile" class="file-input file-input-bordered" accept=".txt">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-4 gap-8">
+            <!-- Sidebar Menu -->
+            <aside class="col-span-1">
+                <div class="menu bg-base-100 p-4 rounded-box shadow-lg">
+                    <li><button class="btn btn-ghost inline-block align-middle" onclick="UI.showAllGraphs()">📊 Mostrar
+                            Todos os
+                            Grafos</button></li>
+                    <li><button class="btn btn-ghost inline-block align-middle"
+                            onclick="UI.showSection('addGraphTemplate')">➕
+                            Adicionar Grafo</button>
+                    </li>
+                    <li><button class="btn btn-ghost inline-block align-middle"
+                            onclick="UI.showSection('deleteGraphTemplate')">🗑️
+                            Excluir Grafo</button></li>
+                    <li><button class="btn btn-ghost inline-block align-middle"
+                            onclick="UI.showSection('visualizeGraphTemplate')">👁️ Visualizar Grafo</button></li>
+                    <li><button class="btn btn-ghost inline-block align-middle"
+                            onclick="UI.showSection('testAlgorithmTemplate')">🔍
+                            Testar Algoritmo</button></li>
+                </div>
+            </aside>
+
+            <!-- Main Display Area -->
+            <main class="col-span-3">
+                <!-- Graph Visualization -->
+                <div id="graph-container" class="bg-white p-4 rounded-box shadow-lg mb-8 flex center"></div>
+
+                <!-- Content Sections -->
+                <div id="content" class="bg-base-100 p-6 rounded-box shadow-lg">
+                    <!-- Content will be dynamically loaded here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Templates -->
+    <template id="showAllTemplate">
+        <div>
+            <h2 class="text-xl font-bold mb-4">Todos os Grafos</h2>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Nós</th>
+                            <th>Arestas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="graphsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <template id="addGraphTemplate">
+        <div>
+            <h2 class="text-xl font-bold mb-4">Adicionar Novo Grafo</h2>
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Nome do Grafo</span>
+                </label>
+                <input type="text" id="graphName" class="input input-bordered">
+            </div>
+            <div class="form-control mt-4">
+                <label class="label">
+                    <span class="label-text">Arestas (formato: "origem destino peso")</span>
+                </label>
+                <textarea id="graphEdges" class="textarea textarea-bordered h-32"></textarea>
+            </div>
+            <button onclick="handleAddGraph()" class="btn btn-primary mt-4">Adicionar Grafo</button>
+        </div>
+    </template>
+
+    <template id="deleteGraphTemplate">
+        <div>
+            <h2 class="text-xl font-bold mb-4">Excluir Grafo</h2>
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Selecione o Grafo</span>
+                </label>
+                <select id="graphId" class="select select-bordered id-select">
+                    ${UI.generateIdOptions()}
+                </select>
+            </div>
+            <button onclick="GraphManager.deleteGraphHandler()" class="btn btn-error mt-4">Excluir Grafo</button>
+        </div>
+    </template>
+
+    <template id="visualizeGraphTemplate">
+        <div>
+            <h2 class="text-xl font-bold mb-4">Visualize Graph</h2>
+            <div class="flex flex-col gap-4">
+                <!-- Selection controls -->
+                <div class="flex gap-4">
+                    <select id="graphId" class="select select-bordered flex-1">
+                        ${UI.generateIdOptions()}
+                    </select>
+                    <button onclick="GraphManager.visualizeGraph('original')" class="btn btn-primary">Original</button>
+                    <button onclick="GraphManager.visualizeGraph('done')" class="btn btn-secondary">Algorithm
+                        Result</button>
+                </div>
+
+                <!-- Iteration table container -->
+                <div id="iterationTableContainer" class="hidden">
+                    <h3 class="text-lg font-semibold mb-2">Algorithm Iterations</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm bg-white rounded-lg shadow overflow-hidden">
+                            <thead class="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                                <tr>
+                                    <th class="px-4 py-3 text-left">Step</th>
+                                    <th class="px-4 py-3 text-left">Current Node</th>
+                                    <th class="px-4 py-3 text-left">Distances</th>
+                                    <th class="px-4 py-3 text-left">Predecessors</th>
+                                </tr>
+                            </thead>
+                            <tbody id="iterationTableBody" class="divide-y divide-gray-100">
+                                <!-- Rows -->
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2">1</td>
+                                    <td class="px-4 py-2 font-semibold text-purple-600">A</td>
+                                    <td class="px-4 py-2 font-mono text-xs text-gray-700">
+                                    </td>
+                                    <td class="px-4 py-2 text-gray-600">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="testAlgorithmTemplate">
+        <div>
+            <h2 class="text-xl font-bold mb-4">Testar Algoritmo de Dijkstra</h2>
+            <div class="flex gap-4">
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">Selecione o Grafo</span>
+                    </label>
+                    <select id="graphId" class="select select-bordered id-select">
+                        ${UI.generateIdOptions()}
+                    </select>
+                </div>
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">Nó de Início</span>
+                    </label>
+                    <input type="text" id="startNode" class="input input-bordered">
+                </div>
+            </div>
+            <button onclick="DijkstraAlgorithm.runTest()" class="btn btn-primary mt-4">Executar Algoritmo</button>
+        </div>
+    </template>
+
+    <script type="module" src="js/main.js"></script>
+    <script>
+        let currentHelpStep = 1;
+        const totalHelpSteps = 4;
+
+        function showHelpStep(step) {
+            currentHelpStep = step;
+
+            if (step !== 4) {
+                document.getElementById('helpOriginalGraph').innerHTML = '';
+                document.getElementById('helpDoneGraph').innerHTML = '';
+            }
+
+            // Update step visibility
+            document.querySelectorAll('.help-step').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.step) === step);
+                el.classList.toggle('hidden', parseInt(el.dataset.step) !== step);
+            });
+
+            // Update step indicators
+            document.querySelectorAll('.step').forEach((el, index) => {
+                el.classList.toggle('step-primary', (index + 1) <= step);
+            });
+
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const understandBtn = document.getElementById('understandBtn');
+
+            prevBtn.disabled = step === 1;
+            nextBtn.classList.toggle('hidden', step === totalHelpSteps);
+            understandBtn.classList.toggle('hidden', step !== totalHelpSteps);
+
+            if (step === 4) {
+                renderHelpGraphs();
+            }
+        }
+
+        function handleHelpNavigation(direction) {
+            const newStep = currentHelpStep + direction;
+            if (newStep > 0 && newStep <= totalHelpSteps) {
+                showHelpStep(newStep);
+            }
+        }
+        document.getElementById('helpButton').addEventListener('click', () => {
+            resetHelpModal();
+            helpModal.showModal();
+        });
+
+        function resetHelpModal() {
+            currentHelpStep = 1;
+            showHelpStep(1);
+        }
+
+        // Initialize modal on first visit
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('seenHelp')) {
+                resetHelpModal();
+                helpModal.showModal();
+                localStorage.setItem('seenHelp', 'true');
+            }
+        });
+
+        async function renderHelpGraphs() {
+            try {
+                const viz = new Viz();
+
+                // Render original graph
+                const originalSvg = await viz.renderSVGElement(helpOriginalDot);
+                document.getElementById('helpOriginalGraph').appendChild(originalSvg);
+
+                // Render done graph
+                const doneSvg = await viz.renderSVGElement(helpDoneDot);
+                document.getElementById('helpDoneGraph').appendChild(doneSvg);
+
+            } catch (error) {
+                console.error('Erro ao renderizar os gráficos do guia:', error);
+                UI.showToast('Não foi possível carregar os exemplos de visualização', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

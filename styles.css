@@ -1,0 +1,156 @@
+/* Custom styles not covered by Tailwind/DaisyUI */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#graph-container svg {
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+}
+
+.tab-content {
+    padding: 1rem 0;
+}
+
+pre code {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+kbd {
+    background-color: hsl(var(--n));
+    color: hsl(var(--nc));
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.help-step {
+    display: none;
+    min-height: 400px;
+}
+
+.help-step.active {
+    display: block;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Add graph styling */
+#helpOriginalGraph svg,
+#helpDoneGraph svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Color overrides for example graphs */
+.red-edge path {
+    stroke: #ef4444 !important;
+}
+
+.red-edge polygon {
+    fill: #ef4444 !important;
+    stroke: #ef4444 !important;
+}
+
+.node text {
+    font-family: 'Helvetica', sans-serif;
+}
+
+.edge text {
+    font-size: 10px !important;
+}
+
+.red-edge path {
+    stroke: #ef4444 !important;
+    stroke-width: 2px !important;
+}
+
+.red-edge polygon {
+    fill: #ef4444 !important;
+    stroke: #ef4444 !important;
+}
+
+.gray-edge path {
+    stroke: #b3b3b3 !important;
+}
+
+.xlabel text {
+    fill: #3b82f6 !important;
+    font-size: 9px !important;
+}
+.iteration-table {
+    width: 100%;
+    font-size: 0.875rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border-collapse: collapse;
+}
+
+.iteration-table thead {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    color: white;
+}
+
+.iteration-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.iteration-table td {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.iteration-table tr:hover {
+    background-color: #f9fafb;
+}
+
+.distance-cell {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #374151;
+}
+
+.predecessors-cell {
+    color: #4b5563;
+}
+
+.current-node {
+    font-weight: 600;
+    color: #8b5cf6;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+    .iteration-table-container {
+        overflow-x: auto;
+    }
+    
+    .iteration-table {
+        font-size: 0.75rem;
+    }
+    
+    .iteration-table th,
+    .iteration-table td {
+        padding: 0.5rem;
+    }
+}

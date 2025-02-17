@@ -1,0 +1,8 @@
+Name: City Network
+Original:
+A B 4
+A C 2
+B A 4
+B C 5
+B D 10
+C D 3
