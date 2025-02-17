@@ -351,9 +351,9 @@ C A 2</code>
 
     <template id="visualizeGraphTemplate">
         <div>
-            <h2 class="text-xl font-bold mb-4">Visualize Graph</h2>
+            <h2 class="text-xl font-bold mb-4">Visualizar Grafo</h2>
             <div class="flex flex-col gap-4">
-                <!-- Selection controls -->
+                <!-- Controles de seleção -->
                 <div class="flex gap-4">
                     <select id="graphId" class="select select-bordered flex-1">
                         ${UI.generateIdOptions()}
@@ -362,29 +362,21 @@ C A 2</code>
                     <button onclick="GraphManager.visualizeGraph('done')" class="btn btn-secondary">Sub-grafo Resultante</button>
                 </div>
 
-                <!-- Iteration table container -->
+                <!-- Container da tabela de iterações -->
                 <div id="iterationTableContainer" class="hidden">
-                    <h3 class="text-lg font-semibold mb-2">Algorithm Iterations</h3>
+                    <h3 class="text-lg font-semibold mb-2">Iterações do Algoritmo</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm bg-white rounded-lg shadow overflow-hidden">
                             <thead class="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                                 <tr>
-                                    <th class="px-4 py-3 text-left">Step</th>
-                                    <th class="px-4 py-3 text-left">Current Node</th>
-                                    <th class="px-4 py-3 text-left">Distances</th>
-                                    <th class="px-4 py-3 text-left">Predecessors</th>
+                                    <th class="px-4 py-3 text-left">Passo</th>
+                                    <th class="px-4 py-3 text-left">Nó Atual</th>
+                                    <th class="px-4 py-3 text-left">Distâncias</th>
+                                    <th class="px-4 py-3 text-left">Predecessores</th>
                                 </tr>
                             </thead>
                             <tbody id="iterationTableBody" class="divide-y divide-gray-100">
-                                <!-- Rows -->
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2">1</td>
-                                    <td class="px-4 py-2 font-semibold text-purple-600">A</td>
-                                    <td class="px-4 py-2 font-mono text-xs text-gray-700">
-                                    </td>
-                                    <td class="px-4 py-2 text-gray-600">
-                                    </td>
-                                </tr>
+                                <!-- Linhas serão inseridas dinamicamente -->
                             </tbody>
                         </table>
                     </div>

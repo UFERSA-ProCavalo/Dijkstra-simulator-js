@@ -10,7 +10,7 @@ export class GraphManager {
      * @param {string} edgesText - Edges in "source target weight" format
      */
     static addGraph(name, edgesText) {
-        
+
         if (!name || !edgesText) {
             UI.showToast('Nome do grafo e arestas são obrigatórios', 'error');
             return;
@@ -18,19 +18,19 @@ export class GraphManager {
 
         try {
             const { edges, nodes, dot } = this.parseEdges(edgesText);
-            
+
             // Validate will now show toasts instead of throwing
             if (!this.validateGraph(edges, nodes)) {
                 return; // Stop if validation failed
             }
-            
+
             this.graphs.push({
                 id: this.nextId++,
                 name,
                 original: { nodes, edges, dot },
                 done: null
             });
-            
+
             UI.showToast('Grafo adicionado com sucesso!', 'success');
             UI.showAllGraphs();
         } catch (error) {
@@ -57,7 +57,7 @@ export class GraphManager {
 
         // Verifica pesos positivos
         const invalidWeight = edges.find(e => e.weight <= 0);
-        if(invalidWeight) {
+        if (invalidWeight) {
             UI.showToast(`Peso inválido (${invalidWeight.weight}) na aresta ${invalidWeight.source}-${invalidWeight.target}`, 'error');
             return false;
         }
@@ -79,7 +79,7 @@ export class GraphManager {
                 key = `undirected:${nodes[0]}-${nodes[1]}`;
             }
 
-            if(edgeSet.has(key)) {
+            if (edgeSet.has(key)) {
                 UI.showToast(`Aresta duplicada: ${e.source} ${e.type === 'directed' ? '->' : e.type === 'bidirectional' ? '<->' : '--'} ${e.target}`, 'error');
                 return false;
             }
@@ -87,7 +87,7 @@ export class GraphManager {
         }
 
         // Verifica grafo conectado
-        if(!this.isGraphConnected(nodes)) {
+        if (!this.isGraphConnected(nodes)) {
             UI.showToast('O grafo não é conectado', 'error');
             return false;
         }
@@ -104,18 +104,18 @@ export class GraphManager {
      */
     static isGraphConnected(nodes) {
         const allNodes = Object.keys(nodes);
-        if(allNodes.length === 0) return false;
+        if (allNodes.length === 0) return false;
 
         const visited = new Set();
         const queue = [allNodes[0]];
         visited.add(allNodes[0]);
 
-        while(queue.length > 0) {
+        while (queue.length > 0) {
             const current = queue.shift();
             const neighbors = nodes[current]?.map(n => n.target) || [];
-            
+
             neighbors.forEach(neighbor => {
-                if(!visited.has(neighbor)) {
+                if (!visited.has(neighbor)) {
                     visited.add(neighbor);
                     queue.push(neighbor);
                 }
@@ -157,7 +157,7 @@ export class GraphManager {
 
             if (source && target && weight) {
                 const parsedWeight = parseInt(weight);
-                
+
                 // Add main edge
                 edges.push({
                     source,
@@ -206,19 +206,19 @@ export class GraphManager {
     static generateOriginalDot(edges) {
         // Get the graph type from the first edge
         const graphType = edges[0]?.type === 'undirected' ? 'graph' : 'digraph';
-        
+
         const processedEdges = new Set(); // Track processed edge pairs
-        
+
         const edgeStrings = edges
             .filter(edge => {
                 const edgeKey = `${edge.source}-${edge.target}`;
                 const reverseKey = `${edge.target}-${edge.source}`;
-                
+
                 // Skip if we've already processed this edge pair
                 if (processedEdges.has(edgeKey) || processedEdges.has(reverseKey)) {
                     return false;
                 }
-                
+
                 processedEdges.add(edgeKey);
                 return true;
             })
@@ -313,10 +313,25 @@ export class GraphManager {
             container.classList.remove('hidden');
             this.renderIterationTable(graph.done.iterations, tableBody);
             UI.renderGraph(graph.done.dot);
+            
+
+        } else if (stateType === 'done' && !graph.done) {
+            container.classList.add('hidden');
+            UI.showToast('Não há iterações disponíveis, teste o algoritmo primeiro!', 'info');
         } else {
             container.classList.add('hidden');
             UI.renderGraph(graph.original.dot);
         }
+    }
+    static visualizeGraphTest() {
+        const id = parseInt(document.getElementById('graphId').value);
+        const graph = this.getGraph(id);
+
+        if (!graph) {
+            UI.showToast('Graph not found!', 'error');
+            return;
+        }
+        UI.renderGraph(graph.original.dot);
     }
 
     /**

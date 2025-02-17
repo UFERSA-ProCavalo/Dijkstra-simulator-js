@@ -22,26 +22,26 @@ export class DijkstraAlgorithm {
             const startNodeElem = document.getElementById('startNode');
 
             if (!graphIdElem || !startNodeElem) {
-                throw new Error('Required form elements not found');
+                throw new Error('Elementos do formulário necessários não encontrados');
             }
 
             const graphId = parseInt(graphIdElem.value);
             const startNode = startNodeElem.value.trim();
 
             if (isNaN(graphId)) {
-                throw new Error('Invalid graph ID');
+                throw new Error('ID do grafo inválido');
             }
 
             const graph = GraphManager.getGraph(graphId);
             if (!graph) {
-                throw new Error(`Graph with ID ${graphId} not found`);
+                throw new Error(`Grafo com ID ${graphId} não encontrado`);
             }
 
             if (!graph.original.nodes[startNode]) {
-                throw new Error(`Start node "${startNode}" not found in graph`);
+                throw new Error(`Nó inicial "${startNode}" não encontrado no grafo`);
             }
 
-            // Run Dijkstra's algorithm
+            // Executa o algoritmo de Dijkstra
             const { distances, predecessors, iterations } = this.runDijkstra(
                 graph.original.nodes,
                 startNode
@@ -54,12 +54,11 @@ export class DijkstraAlgorithm {
                 dot: this.generateDoneDot(graph.original.edges, distances, predecessors)
             });
 
-            UI.showToast('Algorithm executed successfully!', 'success');
-            //UI.visualizeGraph('done');
+            UI.showToast('Algoritmo executado com sucesso!', 'success');
 
         } catch (error) {
-            UI.showToast(`Error: ${error.message}`, 'error');
-            console.error('Algorithm execution failed:', error);
+            UI.showToast(`Erro: ${error.message}`, 'error');
+            console.error('Falha na execução do algoritmo:', error);
         }
     }
 
